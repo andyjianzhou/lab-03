@@ -1,36 +1,55 @@
 package com.example.listycitylab3;
 
-import android.os.Bundle;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-
 import androidx.appcompat.app.AppCompatActivity;
-
+import android.os.Bundle;
+import android.widget.ListView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AddCityFragment.AddCityListener, EditCityFragment.EditCityListener {
 
-    private ArrayList<String> dataList;
-    private ListView cityList;
-    private ArrayAdapter<String> cityAdapter;
+    private ArrayList<City> cityDataList;
+    private CityProvinceList cityAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        String[] cities = {
-                "Edmonton", "Vancouver", "Moscow",
-                "Sydney", "Berlin", "Vienna",
-                "Tokyo", "Beijing", "Osaka", "New Delhi"
-        };
+        ListView cityList = findViewById(R.id.city_list);
 
-        dataList = new ArrayList<>();
-        dataList.addAll(Arrays.asList(cities));
-        
-        cityList = findViewById(R.id.city_list);
-        cityAdapter = new ArrayAdapter<>(this, R.layout.content, dataList);
+        cityDataList = new ArrayList<>();
+        cityDataList.add(new City("Edmonton", "AB"));
+        cityDataList.add(new City("Vancouver", "BC"));
+        cityDataList.add(new City("Toronto", "ON"));
+        cityDataList.add(new City("Hamilton", "ON"));
+        cityDataList.add(new City("Denver", "CO"));
+        cityDataList.add(new City("Los Angeles", "CA"));
+
+        cityAdapter = new CityProvinceList(this, cityDataList);
         cityList.setAdapter(cityAdapter);
+
+        FloatingActionButton fab = findViewById(R.id.fab_add_city);
+        fab.setOnClickListener(v ->
+                new AddCityFragment().show(getSupportFragmentManager(), "ADD_CITY")
+        );
+
+        cityList.setOnItemClickListener((parent, view, position, id) -> {
+            City city = cityDataList.get(position);
+            EditCityFragment.newInstance(city, position)
+                    .show(getSupportFragmentManager(), "EDIT_CITY");
+        });
+    }
+
+    @Override
+    public void onCityAdded(City city) {
+        cityDataList.add(city);
+        cityAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onCityEdited(int position, City updatedCity) {
+        cityDataList.set(position, updatedCity);
+        cityAdapter.notifyDataSetChanged();
     }
 }
